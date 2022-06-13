@@ -1,0 +1,9 @@
+[submodule "microservice-gpsUtil"]
+	path = microservice-gpsUtil
+	url = git@github.com:G-jonathan/microservice-gpsUtil.git
+[submodule "microservice-rewardCentral"]
+	path = microservice-rewardCentral
+	url = git@github.com:G-jonathan/microservice-rewardCentral.git
+[submodule "microservice-TripPricer"]
+	path = microservice-TripPricer
+	url = git@github.com:G-jonathan/microservice-TripPricer.git
