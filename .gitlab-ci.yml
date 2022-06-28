@@ -1,4 +1,4 @@
-image: gradle:alpine
+image: java:8-jdk
 #gradle:alpine
 #java:8-jdk
 
@@ -19,6 +19,7 @@ cache:
 build:
   stage: build
   script:
+    - cd TourGuide
     - ./gradlew assemble
   only:
     - develop
@@ -28,6 +29,7 @@ build:
 test:
   stage: test
   script:
+    - cd TourGuide
     - ./gradlew check
   only:
     - develop
