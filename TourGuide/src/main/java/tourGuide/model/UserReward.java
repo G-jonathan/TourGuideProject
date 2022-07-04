@@ -1,20 +1,20 @@
-package tourGuide.user;
+package tourGuide.model;
 
-import gpsUtil.location.Attraction;
-import gpsUtil.location.VisitedLocation;
+import tourGuide.beans.AttractionBean;
+import tourGuide.beans.VisitedLocationBean;
 
 public class UserReward {
-
-	public final VisitedLocation visitedLocation;
-	public final Attraction attraction;
+	public final VisitedLocationBean visitedLocation;
+	public final AttractionBean attraction;
 	private int rewardPoints;
-	public UserReward(VisitedLocation visitedLocation, Attraction attraction, int rewardPoints) {
+
+	public UserReward(VisitedLocationBean visitedLocation, AttractionBean attraction, int rewardPoints) {
 		this.visitedLocation = visitedLocation;
 		this.attraction = attraction;
 		this.rewardPoints = rewardPoints;
 	}
-	
-	public UserReward(VisitedLocation visitedLocation, Attraction attraction) {
+
+	public UserReward(VisitedLocationBean visitedLocation, AttractionBean attraction) {
 		this.visitedLocation = visitedLocation;
 		this.attraction = attraction;
 	}
@@ -22,9 +22,8 @@ public class UserReward {
 	public void setRewardPoints(int rewardPoints) {
 		this.rewardPoints = rewardPoints;
 	}
-	
+
 	public int getRewardPoints() {
 		return rewardPoints;
 	}
-	
 }
