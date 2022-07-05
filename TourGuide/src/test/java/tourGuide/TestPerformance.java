@@ -1,37 +1,27 @@
-//TODO
-/*
 package tourGuide;
 
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.time.StopWatch;
-import gpsUtil.GpsUtil;
-import gpsUtil.location.Attraction;
-import gpsUtil.location.VisitedLocation;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import rewardCentral.RewardCentral;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import tourGuide.helper.InternalTestHelper;
-import tourGuide.service.IUserService;
-import tourGuide.service.impl.RewardsCentralService;
-import tourGuide.service.impl.GpsUtilService;
+import tourGuide.service.IGpsUtilService;
+import tourGuide.service.IRewardCentralService;
 import tourGuide.model.User;
 import tourGuide.service.impl.UserServiceImpl;
 
-// TODO
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class TestPerformance {
 
 	private final Logger LOGGER = LoggerFactory.getLogger(TestPerformance.class);
-
- */
 
 	/*
 	 * A note on performance improvements:
@@ -52,15 +42,22 @@ public class TestPerformance {
      *     highVolumeGetRewards: 100,000 users within 20 minutes:
 	 *          assertTrue(TimeUnit.MINUTES.toSeconds(20) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	 */
-/*
-	@Disabled
+
+	@Autowired
+	private IGpsUtilService gpsUtilService;
+
+	@Autowired
+	IRewardCentralService rewardCentralService;
+
+	//@Disabled
 	@Test
 	public void highVolumeTrackLocation() {
 
 		// Users should be incremented up to 100,000, and test finishes within 15 minutes
-		InternalTestHelper.setInternalUserNumber(100);
+		InternalTestHelper.setInternalUserNumber(100000);
 
-		IUserService userService = new UserServiceImpl();
+		UserServiceImpl userService = new UserServiceImpl(gpsUtilService, rewardCentralService);
+
 		List<User> allUsers = userService.getAllUsers();
 
 		StopWatch stopWatch = new StopWatch();
@@ -77,6 +74,7 @@ public class TestPerformance {
 		assertTrue(TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	}
 
+	/*
 	@Disabled
 	@Test
 	public void highVolumeGetRewards() {
@@ -100,5 +98,6 @@ public class TestPerformance {
 		System.out.println("highVolumeGetRewards: Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
 		assertTrue(TimeUnit.MINUTES.toSeconds(20) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	}
+
+	 */
 }
-		*/
