@@ -2,122 +2,143 @@ package tourGuide.service.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tourGuide.beans.LocationBean;
 import tourGuide.beans.VisitedLocationBean;
-import tourGuide.helper.InternalTestHelper;
+import tourGuide.exceptions.UserAlreadyExistException;
+import tourGuide.exceptions.UserNotFoundException;
+import tourGuide.helper.InternalTestData;
 import tourGuide.model.User;
 import tourGuide.model.UserReward;
-import tourGuide.proxies.MicroserviceGpsUtilProxy;
+import tourGuide.service.IGpsUtilService;
+import tourGuide.service.IRewardCentralService;
 import tourGuide.service.IUserService;
 import tourGuide.tracker.Tracker;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.IntStream;
 
+/**
+ * @author jonathan GOUVEIA
+ * @version 1.0
+ */
 @Service
 public class UserServiceImpl implements IUserService {
-
     private final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
-    private final MicroserviceGpsUtilProxy gpsUtilProxy;
-    private final RewardsCentralService rewardsCentralService;
-    public boolean testMode = true;
+    private final IGpsUtilService gpsUtilService;
+    private final IRewardCentralService rewardsCentralService;
     public final Tracker tracker;
 
+    @Autowired
+    private InternalTestData internalTestData;
 
-    public UserServiceImpl(MicroserviceGpsUtilProxy gpsUtilProxy, RewardsCentralService rewardsCentralService) {
-        this.gpsUtilProxy = gpsUtilProxy;
+    public UserServiceImpl(IGpsUtilService gpsUtilService, IRewardCentralService rewardsCentralService) {
+        this.gpsUtilService = gpsUtilService;
         this.rewardsCentralService = rewardsCentralService;
         tracker = new Tracker(this);
         addShutDownHook();
-        if (testMode) {
-            LOGGER.info("TestMode enabled");
-            LOGGER.debug("Initializing users");
-            initializeInternalUsers();
-            LOGGER.debug("Finished initializing users");
-        }
-    }
-
-    @Override
-    public List<UserReward> getUserRewards(User user) {
-        return user.getUserRewards();
-    }
-
-    @Override
-    public VisitedLocationBean getUserLocation(User user) {
-        return (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation() : trackUserLocation(user);
-    }
-
-    @Override
-    public User getUser(String userName) {
-        return internalUserMap.get(userName);
-    }
-
-    @Override
-    public List<User> getAllUsers() {
-        return new ArrayList<>(internalUserMap.values());
-    }
-
-    @Override
-    public void addUser(User user) {
-        if (!internalUserMap.containsKey(user.getUserName())) {
-            internalUserMap.put(user.getUserName(), user);
-        }
-    }
-
-    @Override
-    public VisitedLocationBean trackUserLocation(User user) {
-        VisitedLocationBean visitedLocation = gpsUtilProxy.getUserLocation(user.getUserId());
-        user.addToVisitedLocations(visitedLocation);
-        rewardsCentralService.calculateRewards(user);
-        return visitedLocation;
     }
 
     private void addShutDownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(tracker::stopTracking));
     }
 
-    /**********************************************************************************
+    /**
+     * Determines if the user exists in this application
      *
-     * Methods Below: For Internal Testing
+     * @param userName HashMap key of internalUserMap
+     * @return True if user exist, false if user does not exist
+     */
+    @Override
+    public boolean isUserExist(String userName) {
+        LOGGER.info("[SERVICE] Call UserServiceImpl method: isUserExist(" + userName + ")");
+        boolean response = internalTestData.getInternalUserMap().containsKey(userName);
+        LOGGER.debug("[RETURN]:  " + response);
+        return response;
+    }
+
+    /**
+     * Search a user by userName in the list of internal users
      *
-     **********************************************************************************/
-
-    private final Map<String, User> internalUserMap = new HashMap<>();
-    private void initializeInternalUsers() {
-        IntStream.range(0, InternalTestHelper.getInternalUserNumber()).forEach(i -> {
-            String userName = "internalUser" + i;
-            String phone = "000";
-            String email = userName + "@tourGuide.com";
-            User user = new User(UUID.randomUUID(), userName, phone, email);
-            generateUserLocationHistory(user);
-
-            internalUserMap.put(userName, user);
-        });
-        LOGGER.debug("Created " + InternalTestHelper.getInternalUserNumber() + " internal test users.");
+     * @param userName HashMap key of internalUserMap
+     * @return The user corresponding to the hashmap key
+     * @throws UserNotFoundException Custom exception when a user is not found
+     */
+    @Override
+    public User getInternalUser(String userName) throws UserNotFoundException {
+        LOGGER.info("[SERVICE] Call UserServiceImpl method: getInternalUser(" + userName + ")");
+        if (isUserExist(userName)) {
+            return internalTestData.getInternalUserMap().get(userName);
+        } else {
+            throw new UserNotFoundException("User Not found with: userName= " + userName);
+        }
     }
 
-    private void generateUserLocationHistory(User user) {
-        IntStream.range(0, 3).forEach(i-> {
-            user.addToVisitedLocations(new VisitedLocationBean(user.getUserId(), new LocationBean(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()));
-        });
+    /**
+     * Allows to add a user to this application
+     *
+     * @param user object
+     * @throws UserAlreadyExistException Custom exception when a user already exist on this application
+     */
+    @Override
+    public User addUser(User user) throws UserAlreadyExistException, UserNotFoundException {
+        LOGGER.info("[SERVICE] Call UserServiceImpl method: addUser(" + user + ")");
+        String userName = user.getUserName();
+        if (!isUserExist(userName)) {
+            internalTestData.getInternalUserMap().put(userName, user);
+            return getInternalUser(userName);
+        } else {
+            throw new UserAlreadyExistException("User: [" + user.getUserName() + "] already exist");
+        }
     }
 
-    private double generateRandomLongitude() {
-        double leftLimit = -180;
-        double rightLimit = 180;
-        return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
+    /**
+     * Get the rewards obtained by this user
+     *
+     * @param user object
+     * @return A list of rewards obtained by this user
+     */
+    @Override
+    public List<UserReward> getUserRewards(User user) {
+        LOGGER.info("[SERVICE] Call UserServiceImpl method: getUserRewards(" + user + ")");
+        return user.getUserRewards();
     }
 
-    private double generateRandomLatitude() {
-        double leftLimit = -85.05112878;
-        double rightLimit = 85.05112878;
-        return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
+    /**
+     * Get the last visited location or ,if it's empty, the actual User location
+     *
+     * @param user object
+     * @return A VisitedLocation Object who contain the date and user GPS position
+     */
+    @Override
+    public VisitedLocationBean getUserLocation(User user) {
+        LOGGER.info("[SERVICE] Call UserServiceImpl method: getUserLocation(" + user + ")");
+        return (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation() : trackUserLocation(user);
     }
 
-    private Date getRandomTime() {
-        LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
-        return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
+    /**
+     * Get all users of our internal list
+     *
+     * @return A list of Users
+     */
+    @Override
+    public List<User> getAllUsers() {
+        LOGGER.info("[SERVICE] Call UserServiceImpl method: getAllUsers()");
+        return new ArrayList<>(internalTestData.getInternalUserMap().values());
+    }
+
+    /**
+     * Tracks the current position of the user and add it to its list of user.visitedLocations
+     * then call rewardCentral method to calculates the corresponding rewards
+     *
+     * @param user object
+     * @return  A VisitedLocation Object who contain the date and user GPS position
+     */
+    //TODO REFACTOR THIS METHOD ?
+    @Override
+    public VisitedLocationBean trackUserLocation(User user) {
+        LOGGER.info("[SERVICE] Call UserServiceImpl method: trackUserLocation(" + user + ")");
+        VisitedLocationBean visitedLocationBean = gpsUtilService.getUserLocation(user.getUserId());
+        user.addToVisitedLocations(visitedLocationBean);
+        rewardsCentralService.calculateRewards(user);
+        return visitedLocationBean;
     }
 }

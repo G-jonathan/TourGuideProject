@@ -1,9 +1,12 @@
 package tourGuide.service;
 
 import tourGuide.beans.VisitedLocationBean;
+import tourGuide.exceptions.UserAlreadyExistException;
+import tourGuide.exceptions.UserNotFoundException;
 import tourGuide.model.User;
 import tourGuide.model.UserReward;
 import java.util.List;
+import java.util.Optional;
 
 public interface IUserService {
 
@@ -11,11 +14,13 @@ public interface IUserService {
 
     VisitedLocationBean getUserLocation(User user);
 
-    User getUser(String userName);
+    User getInternalUser(String userName) throws UserNotFoundException;
 
     List<User> getAllUsers();
 
-    void addUser(User user);
+    User addUser(User user) throws UserAlreadyExistException, UserNotFoundException;
 
     VisitedLocationBean trackUserLocation(User user);
+
+    boolean isUserExist(String userName);
 }
