@@ -11,11 +11,15 @@ import com.jsoniter.output.JsonStream;
 import tourGuide.beans.ProviderBean;
 import tourGuide.beans.VisitedLocationBean;
 import tourGuide.exceptions.UserNotFoundException;
+import tourGuide.service.IGpsUtilService;
 import tourGuide.service.ITripPricerService;
 import tourGuide.service.IUserService;
-import tourGuide.service.impl.GpsUtilService;
 import tourGuide.model.User;
 
+/**
+ * @author jonathan GOUVEIA
+ * @version 1.0
+ */
 @RestController
 public class TourGuideController {
 
@@ -23,7 +27,7 @@ public class TourGuideController {
     private final Logger LOGGER = LoggerFactory.getLogger(TourGuideController.class);
 
     @Autowired
-    GpsUtilService gpsUtilService;
+    IGpsUtilService gpsUtilService;
 
     @Autowired
     IUserService userService;
@@ -31,17 +35,31 @@ public class TourGuideController {
     @Autowired
     ITripPricerService tripPricerService;
 
+    /**
+     *
+     * @return
+     */
     @RequestMapping("/")
     public String index() {
         return "Greetings from TourGuide!";
     }
 
+    /**
+     *
+     * @return
+     */
     @RequestMapping("/users")
     public String getAllUsers() {
         LOGGER.info("ENTREE CONTROLLER: /USERS");
         return userService.getAllUsers().toString();
     }
 
+    /**
+     *
+     * @param userName
+     * @return
+     * @throws UserNotFoundException
+     */
     @RequestMapping("/getLocation")
     public String getLocation(@RequestParam String userName) throws UserNotFoundException {
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
@@ -59,6 +77,9 @@ public class TourGuideController {
     //    Note: Attraction reward points can be gathered from RewardsCentral
     @RequestMapping("/getNearbyAttractions")
     public String getNearbyAttractions(@RequestParam String userName) throws UserNotFoundException {
+
+
+
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
         return JsonStream.serialize(gpsUtilService.getNearByAttractions(visitedLocation));
     }

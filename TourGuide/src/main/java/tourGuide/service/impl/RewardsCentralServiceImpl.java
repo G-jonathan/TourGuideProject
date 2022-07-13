@@ -13,14 +13,14 @@ import tourGuide.service.IGpsUtilService;
 import tourGuide.service.IRewardCentralService;
 
 @Service
-public class RewardsCentralService implements IRewardCentralService {
-
+public class RewardsCentralServiceImpl implements IRewardCentralService {
 	private final MicroserviceGpsUtilProxy gpsUtilProxy;
 	private final MicroserviceRewardCentralProxy rewardCentralProxy;
+
 	@Autowired
 	private IGpsUtilService gpsUtilService;
 
-	public RewardsCentralService(MicroserviceGpsUtilProxy gpsUtilProxy, MicroserviceRewardCentralProxy rewardCentralProxy) {
+	public RewardsCentralServiceImpl(MicroserviceGpsUtilProxy gpsUtilProxy, MicroserviceRewardCentralProxy rewardCentralProxy) {
 		this.gpsUtilProxy = gpsUtilProxy;
 		this.rewardCentralProxy = rewardCentralProxy;
 	}

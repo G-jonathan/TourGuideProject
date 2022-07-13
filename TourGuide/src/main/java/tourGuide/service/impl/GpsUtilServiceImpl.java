@@ -13,8 +13,8 @@ import tourGuide.proxies.MicroserviceGpsUtilProxy;
 import tourGuide.service.IGpsUtilService;
 
 @Service
-public class GpsUtilService implements IGpsUtilService {
-	private final Logger LOGGER = LoggerFactory.getLogger(GpsUtilService.class);
+public class GpsUtilServiceImpl implements IGpsUtilService {
+	private final Logger LOGGER = LoggerFactory.getLogger(GpsUtilServiceImpl.class);
 	private final MicroserviceGpsUtilProxy gpsUtilProxy;
 	private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
 	// proximity in miles
@@ -22,7 +22,7 @@ public class GpsUtilService implements IGpsUtilService {
 	private int proximityBuffer = defaultProximityBuffer;
 	private static final int attractionProximityRange = 200;
 
-	public GpsUtilService(MicroserviceGpsUtilProxy gpsUtilProxy) {
+	public GpsUtilServiceImpl(MicroserviceGpsUtilProxy gpsUtilProxy) {
 		this.gpsUtilProxy = gpsUtilProxy;
 	}
 
