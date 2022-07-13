@@ -45,8 +45,8 @@ public class TestTourGuideService {
 		tourGuideService.addUser(user);
 		tourGuideService.addUser(user2);
 		
-		User retrivedUser = tourGuideService.getUser(user.getUserName());
-		User retrivedUser2 = tourGuideService.getUser(user2.getUserName());
+		User retrivedUser = tourGuideService.getInternalUser(user.getUserName());
+		User retrivedUser2 = tourGuideService.getInternalUser(user2.getUserName());
 
 		tourGuideService.tracker.stopTracking();
 		

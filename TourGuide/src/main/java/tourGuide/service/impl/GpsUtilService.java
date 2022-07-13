@@ -2,6 +2,7 @@ package tourGuide.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,11 @@ public class GpsUtilService implements IGpsUtilService {
 	}
 
 	@Override
+	public VisitedLocationBean getUserLocation(UUID userId) {
+		return gpsUtilProxy.getUserLocation(userId);
+	}
+
+	@Override
 	public List<AttractionBean> getNearByAttractions(VisitedLocationBean visitedLocation) {
 		List<AttractionBean> nearbyAttractions = new ArrayList<>();
 		for (AttractionBean attraction : gpsUtilProxy.getAttractionList()) {
@@ -58,6 +64,7 @@ public class GpsUtilService implements IGpsUtilService {
 	public double getDistance(LocationBean loc1, LocationBean loc2) {
 		double lat1 = Math.toRadians(loc1.latitude);
 		double lon1 = Math.toRadians(loc1.longitude);
+		LOGGER.info("ICI --> " + loc2.toString());
 		double lat2 = Math.toRadians(loc2.latitude);
 		double lon2 = Math.toRadians(loc2.longitude);
 		double angle = Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));

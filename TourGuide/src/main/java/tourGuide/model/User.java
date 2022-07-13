@@ -69,10 +69,9 @@ public class User {
 		visitedLocations.clear();
 	}
 
+	//TODO CHECK IF OBJECT ALREADY EXIST / MOVE METHODE ?
 	public void addUserReward(UserReward userReward) {
-		if (userRewards.stream().noneMatch(r -> true)) {
-			userRewards.add(userReward);
-		}
+		userRewards.add(userReward);
 	}
 
 	public List<UserReward> getUserRewards() {

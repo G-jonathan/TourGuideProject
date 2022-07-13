@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jsoniter.output.JsonStream;
 import tourGuide.beans.ProviderBean;
 import tourGuide.beans.VisitedLocationBean;
+import tourGuide.exceptions.UserNotFoundException;
 import tourGuide.service.ITripPricerService;
 import tourGuide.service.IUserService;
 import tourGuide.service.impl.GpsUtilService;
@@ -35,8 +36,14 @@ public class TourGuideController {
         return "Greetings from TourGuide!";
     }
 
+    @RequestMapping("/users")
+    public String getAllUsers() {
+        LOGGER.info("ENTREE CONTROLLER: /USERS");
+        return userService.getAllUsers().toString();
+    }
+
     @RequestMapping("/getLocation")
-    public String getLocation(@RequestParam String userName) {
+    public String getLocation(@RequestParam String userName) throws UserNotFoundException {
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
         return JsonStream.serialize(visitedLocation.LocationBean);
     }
@@ -51,13 +58,13 @@ public class TourGuideController {
     // The reward points for visiting each Attraction.
     //    Note: Attraction reward points can be gathered from RewardsCentral
     @RequestMapping("/getNearbyAttractions")
-    public String getNearbyAttractions(@RequestParam String userName) {
+    public String getNearbyAttractions(@RequestParam String userName) throws UserNotFoundException {
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
         return JsonStream.serialize(gpsUtilService.getNearByAttractions(visitedLocation));
     }
 
     @RequestMapping("/getRewards")
-    public String getRewards(@RequestParam String userName) {
+    public String getRewards(@RequestParam String userName) throws UserNotFoundException {
         return JsonStream.serialize( userService.getUserLocation(getUser(userName)));
     }
 
@@ -77,12 +84,12 @@ public class TourGuideController {
     }
 
     @RequestMapping("/getTripDeals")
-    public String getTripDeals(@RequestParam String userName) {
+    public String getTripDeals(@RequestParam String userName) throws UserNotFoundException {
         List<ProviderBean> providers = tripPricerService.getTripDeals(getUser(userName));
         return JsonStream.serialize(providers);
     }
 
-    private User getUser(String userName) {
-        return userService.getUser(userName);
+    private User getUser(String userName) throws UserNotFoundException {
+        return userService.getInternalUser(userName);
     }
 }
