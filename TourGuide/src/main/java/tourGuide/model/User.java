@@ -13,10 +13,10 @@ public class User {
 	private String phoneNumber;
 	private String emailAddress;
 	private Date latestLocationTimestamp;
-	private final List<VisitedLocationBean> visitedLocations = new ArrayList<>();
-	private final List<UserReward> userRewards = new ArrayList<>();
 	private UserPreferences userPreferences = new UserPreferences();
 	private List<ProviderBean> tripDeals = new ArrayList<>();
+	private final List<VisitedLocationBean> visitedLocations = new ArrayList<>();
+	private final List<UserReward> userRewards = new ArrayList<>();
 
 	public User(UUID userId, String userName, String phoneNumber, String emailAddress) {
 		this.userId = userId;
@@ -33,49 +33,28 @@ public class User {
 		return userName;
 	}
 
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-	}
-
 	public String getPhoneNumber() {
 		return phoneNumber;
 	}
 
-	public void setEmailAddress(String emailAddress) {
-		this.emailAddress = emailAddress;
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
 	}
 
 	public String getEmailAddress() {
 		return emailAddress;
 	}
 
-	public void setLatestLocationTimestamp(Date latestLocationTimestamp) {
-		this.latestLocationTimestamp = latestLocationTimestamp;
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
 	}
 
 	public Date getLatestLocationTimestamp() {
 		return latestLocationTimestamp;
 	}
 
-	public void addToVisitedLocations(VisitedLocationBean visitedLocation) {
-		visitedLocations.add(visitedLocation);
-	}
-
-	public List<VisitedLocationBean> getVisitedLocations() {
-		return visitedLocations;
-	}
-
-	public void clearVisitedLocations() {
-		visitedLocations.clear();
-	}
-
-	//TODO CHECK IF OBJECT ALREADY EXIST / MOVE METHODE ?
-	public void addUserReward(UserReward userReward) {
-		userRewards.add(userReward);
-	}
-
-	public List<UserReward> getUserRewards() {
-		return userRewards;
+	public void setLatestLocationTimestamp(Date latestLocationTimestamp) {
+		this.latestLocationTimestamp = latestLocationTimestamp;
 	}
 
 	public UserPreferences getUserPreferences() {
@@ -86,15 +65,37 @@ public class User {
 		this.userPreferences = userPreferences;
 	}
 
-	public VisitedLocationBean getLastVisitedLocation() {
-		return visitedLocations.get(visitedLocations.size() - 1);
+	public List<ProviderBean> getTripDeals() {
+		return tripDeals;
 	}
-
 	public void setTripDeals(List<ProviderBean> tripDeals) {
 		this.tripDeals = tripDeals;
 	}
 
-	public List<ProviderBean> getTripDeals() {
-		return tripDeals;
+	public List<VisitedLocationBean> getVisitedLocations() {
+		return visitedLocations;
+	}
+
+	public List<UserReward> getUserRewards() {
+		return userRewards;
+	}
+
+	//TODO THIS FOUR METHODS MUST BE MOVED ?
+
+	//TODO CHECK IF OBJECT ALREADY EXIST / MOVE METHODE ?
+	public void addUserReward(UserReward userReward) {
+		userRewards.add(userReward);
+	}
+
+	public void clearVisitedLocations() {
+		visitedLocations.clear();
+	}
+
+	public void addToVisitedLocations(VisitedLocationBean visitedLocation) {
+		visitedLocations.add(visitedLocation);
+	}
+
+	public VisitedLocationBean getLastVisitedLocation() {
+		return visitedLocations.get(visitedLocations.size() - 1);
 	}
 }
