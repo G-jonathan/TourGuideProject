@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import tourGuide.beans.AttractionBean;
 import tourGuide.beans.LocationBean;
 import tourGuide.beans.VisitedLocationBean;
+import tourGuide.model.Location;
+import tourGuide.model.User;
+import tourGuide.model.UserLocation;
 import tourGuide.proxies.MicroserviceGpsUtilProxy;
 import tourGuide.service.IGpsUtilService;
 
@@ -34,11 +37,42 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 		proximityBuffer = defaultProximityBuffer;
 	}
 
+	/**
+	 *
+	 * @param userList
+	 * @return
+	 */
+	@Override
+	public List<UserLocation> getAllCurrentLocations(List<User> userList) {
+		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: getAllCurrentLocations(" + userList + ")");
+		List<UserLocation> userLocationList = new ArrayList<>();
+		userList.forEach(user -> userLocationList.add(
+				new UserLocation(
+						user.getUserId().toString(),
+						new Location(
+								user.getLastVisitedLocation().LocationBean.longitude,
+								user.getLastVisitedLocation().LocationBean.latitude
+						)
+				)
+		));
+		return userLocationList;
+	}
+
+	/**
+	 *
+	 * @param userId
+	 * @return
+	 */
 	@Override
 	public VisitedLocationBean getUserLocation(UUID userId) {
 		return gpsUtilProxy.getUserLocation(userId);
 	}
 
+	/**
+	 *
+	 * @param visitedLocation
+	 * @return
+	 */
 	@Override
 	public List<AttractionBean> getNearByAttractions(VisitedLocationBean visitedLocation) {
 		List<AttractionBean> nearbyAttractions = new ArrayList<>();
@@ -50,16 +84,34 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 		return nearbyAttractions;
 	}
 
+	/**
+	 *
+	 * @param attraction
+	 * @param location
+	 * @return
+	 */
 	@Override
 	public boolean isWithinAttractionProximity(AttractionBean attraction, LocationBean location) {
 		return !(getDistance(attraction, location) > attractionProximityRange);
 	}
 
+	/**
+	 *
+	 * @param visitedLocation
+	 * @param attraction
+	 * @return
+	 */
 	@Override
 	public boolean nearAttraction(VisitedLocationBean visitedLocation, AttractionBean attraction) {
 		return !(getDistance(attraction, visitedLocation.LocationBean) > proximityBuffer);
 	}
 
+	/**
+	 *
+	 * @param loc1
+	 * @param loc2
+	 * @return
+	 */
 	@Override
 	public double getDistance(LocationBean loc1, LocationBean loc2) {
 		double lat1 = Math.toRadians(loc1.latitude);

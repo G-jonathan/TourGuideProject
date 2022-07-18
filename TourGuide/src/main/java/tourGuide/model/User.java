@@ -18,7 +18,6 @@ public class User {
 	private final List<VisitedLocationBean> visitedLocations = new ArrayList<>();
 	private final List<UserReward> userRewards = new ArrayList<>();
 
-
 	public User(UUID userId, String userName, String phoneNumber, String emailAddress) {
 		this.userId = userId;
 		this.userName = userName;
@@ -81,17 +80,19 @@ public class User {
 		return userRewards;
 	}
 
-	public void addToVisitedLocations(VisitedLocationBean visitedLocation) {
-		visitedLocations.add(visitedLocation);
+	//TODO THIS FOUR METHODS MUST BE MOVED ?
+
+	//TODO CHECK IF OBJECT ALREADY EXIST / MOVE METHODE ?
+	public void addUserReward(UserReward userReward) {
+		userRewards.add(userReward);
 	}
 
 	public void clearVisitedLocations() {
 		visitedLocations.clear();
 	}
 
-	//TODO CHECK IF OBJECT ALREADY EXIST / MOVE METHODE ?
-	public void addUserReward(UserReward userReward) {
-		userRewards.add(userReward);
+	public void addToVisitedLocations(VisitedLocationBean visitedLocation) {
+		visitedLocations.add(visitedLocation);
 	}
 
 	public VisitedLocationBean getLastVisitedLocation() {
