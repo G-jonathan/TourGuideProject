@@ -1,6 +1,9 @@
 package tourGuide.controller;
 
 import java.util.List;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,19 +14,26 @@ import com.jsoniter.output.JsonStream;
 import tourGuide.beans.ProviderBean;
 import tourGuide.beans.VisitedLocationBean;
 import tourGuide.exceptions.UserNotFoundException;
+import tourGuide.model.UserLocation;
+import tourGuide.service.IGpsUtilService;
 import tourGuide.service.ITripPricerService;
 import tourGuide.service.IUserService;
-import tourGuide.service.impl.GpsUtilService;
 import tourGuide.model.User;
 
+/**
+ * @author jonathan GOUVEIA
+ * @version 1.0
+ */
 @RestController
 public class TourGuideController {
 
     //TODO CUSTOM CONTROLLER LOGGER
     private final Logger LOGGER = LoggerFactory.getLogger(TourGuideController.class);
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     @Autowired
-    GpsUtilService gpsUtilService;
+    IGpsUtilService gpsUtilService;
 
     @Autowired
     IUserService userService;
@@ -31,21 +41,35 @@ public class TourGuideController {
     @Autowired
     ITripPricerService tripPricerService;
 
+    /**
+     *
+     * @return
+     */
     @RequestMapping("/")
     public String index() {
         return "Greetings from TourGuide!";
     }
 
+    /**
+     *
+     * @return
+     */
     @RequestMapping("/users")
     public String getAllUsers() {
         LOGGER.info("ENTREE CONTROLLER: /USERS");
         return userService.getAllUsers().toString();
     }
 
+    /**
+     *
+     * @param userName
+     * @return
+     * @throws UserNotFoundException
+     */
     @RequestMapping("/getLocation")
-    public String getLocation(@RequestParam String userName) throws UserNotFoundException {
+    public String getLocation(@RequestParam String userName) throws UserNotFoundException, JsonProcessingException {
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
-        return JsonStream.serialize(visitedLocation.LocationBean);
+        return objectMapper.writeValueAsString(visitedLocation.LocationBean);
     }
 
     //  TODO: Change this method to no longer return a List of Attractions.
@@ -59,28 +83,33 @@ public class TourGuideController {
     //    Note: Attraction reward points can be gathered from RewardsCentral
     @RequestMapping("/getNearbyAttractions")
     public String getNearbyAttractions(@RequestParam String userName) throws UserNotFoundException {
+
+
+
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
         return JsonStream.serialize(gpsUtilService.getNearByAttractions(visitedLocation));
     }
 
+    /**
+     *
+     * @param userName Request param, user.userName
+     * @return a JSON mapping of user rewards
+     * @throws UserNotFoundException Custom exception when a user is not found in application database
+     */
     @RequestMapping("/getRewards")
     public String getRewards(@RequestParam String userName) throws UserNotFoundException {
-        return JsonStream.serialize( userService.getUserLocation(getUser(userName)));
+        return JsonStream.serialize( userService.getUserRewards(getUser(userName)));
     }
 
+    /**
+     * Get a list of every user's most recent location
+     *
+     * @return a JSON mapping of userId to Locations like:
+     * {"userId":"17190a91-c3e3-4633-aace-92de27f807d7","location":{"latitude":-155.263092,"longitude":-30.622786}}
+     */
     @RequestMapping("/getAllCurrentLocations")
     public String getAllCurrentLocations() {
-        // TODO: Get a list of every user's most recent location as JSON
-        //- Note: does not use gpsUtil to query for their current location,
-        //        but rather gathers the user's current location from their stored location history.
-        //
-        // Return object should be the just a JSON mapping of userId to Locations similar to:
-        //     {
-        //        "019b04a9-067a-4c76-8817-ee75088c3822": {"longitude":-48.188821,"latitude":74.84371}
-        //        ...
-        //     }
-
-        return JsonStream.serialize("");
+        return JsonStream.serialize(gpsUtilService.getAllCurrentLocations(userService.getAllUsers()));
     }
 
     @RequestMapping("/getTripDeals")
