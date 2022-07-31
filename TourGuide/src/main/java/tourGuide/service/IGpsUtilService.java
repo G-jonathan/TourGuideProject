@@ -18,7 +18,5 @@ public interface IGpsUtilService {
 
     boolean isWithinAttractionProximity(AttractionBean attraction, LocationBean location);
 
-    boolean nearAttraction(VisitedLocationBean visitedLocation, AttractionBean attraction);
-
-    double getDistance(LocationBean loc1, LocationBean loc2);
+    void trackUserLocation(User user);
 }
