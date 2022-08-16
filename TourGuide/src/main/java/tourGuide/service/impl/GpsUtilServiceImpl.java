@@ -3,8 +3,12 @@ package tourGuide.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tourGuide.beans.AttractionBean;
 import tourGuide.beans.LocationBean;
@@ -14,28 +18,22 @@ import tourGuide.model.User;
 import tourGuide.model.UserLocation;
 import tourGuide.proxies.MicroserviceGpsUtilProxy;
 import tourGuide.service.IGpsUtilService;
+import tourGuide.service.IRewardCentralService;
 
 @Service
 public class GpsUtilServiceImpl implements IGpsUtilService {
 	private final Logger LOGGER = LoggerFactory.getLogger(GpsUtilServiceImpl.class);
 	private final MicroserviceGpsUtilProxy gpsUtilProxy;
-	private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
-	// proximity in miles
-	private final int defaultProximityBuffer = 10;
-	private int proximityBuffer = defaultProximityBuffer;
 	private static final int attractionProximityRange = 200;
+	private final ExecutorService executorService = Executors.newFixedThreadPool(10000);
+
+	@Autowired
+	IRewardCentralService rewardCentralService;
 
 	public GpsUtilServiceImpl(MicroserviceGpsUtilProxy gpsUtilProxy) {
 		this.gpsUtilProxy = gpsUtilProxy;
 	}
 
-	public void setProximityBuffer(int proximityBuffer) {
-		this.proximityBuffer = proximityBuffer;
-	}
-
-	public void setDefaultProximityBuffer() {
-		proximityBuffer = defaultProximityBuffer;
-	}
 
 	/**
 	 *
@@ -50,8 +48,8 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 				new UserLocation(
 						user.getUserId().toString(),
 						new Location(
-								user.getLastVisitedLocation().LocationBean.longitude,
-								user.getLastVisitedLocation().LocationBean.latitude
+								user.getLastVisitedLocation().locationBean.longitude,
+								user.getLastVisitedLocation().locationBean.latitude
 						)
 				)
 		));
@@ -65,6 +63,7 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	 */
 	@Override
 	public VisitedLocationBean getUserLocation(UUID userId) {
+		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: getNearByAttractions(" + userId + ")");
 		return gpsUtilProxy.getUserLocation(userId);
 	}
 
@@ -75,14 +74,16 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	 */
 	@Override
 	public List<AttractionBean> getNearByAttractions(VisitedLocationBean visitedLocation) {
+		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: getNearByAttractions(" + visitedLocation + ")");
 		List<AttractionBean> nearbyAttractions = new ArrayList<>();
 		for (AttractionBean attraction : gpsUtilProxy.getAttractionList()) {
-			if (isWithinAttractionProximity(attraction, visitedLocation.LocationBean)) {
+			if (isWithinAttractionProximity(attraction, visitedLocation.locationBean)) {
 				nearbyAttractions.add(attraction);
 			}
 		}
 		return nearbyAttractions;
 	}
+
 
 	/**
 	 *
@@ -92,35 +93,23 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	 */
 	@Override
 	public boolean isWithinAttractionProximity(AttractionBean attraction, LocationBean location) {
-		return !(getDistance(attraction, location) > attractionProximityRange);
+		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: isWithinAttractionProximity(" + attraction + ", " + location + ")");
+		return !(rewardCentralService.getDistance(attraction, location) > attractionProximityRange);
 	}
 
 	/**
+	 * Tracks the current position of the user and add it to its list of user.visitedLocations
+	 * then call rewardCentral method to calculates the corresponding rewards
 	 *
-	 * @param visitedLocation
-	 * @param attraction
-	 * @return
+	 * @param user object
 	 */
 	@Override
-	public boolean nearAttraction(VisitedLocationBean visitedLocation, AttractionBean attraction) {
-		return !(getDistance(attraction, visitedLocation.LocationBean) > proximityBuffer);
-	}
-
-	/**
-	 *
-	 * @param loc1
-	 * @param loc2
-	 * @return
-	 */
-	@Override
-	public double getDistance(LocationBean loc1, LocationBean loc2) {
-		double lat1 = Math.toRadians(loc1.latitude);
-		double lon1 = Math.toRadians(loc1.longitude);
-		LOGGER.info("ICI --> " + loc2.toString());
-		double lat2 = Math.toRadians(loc2.latitude);
-		double lon2 = Math.toRadians(loc2.longitude);
-		double angle = Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));
-		double nauticalMiles = 60 * Math.toDegrees(angle);
-		return STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
+	public void trackUserLocation(User user) {
+		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: trackUserLocation(" + user + ")");
+		CompletableFuture.supplyAsync(() -> getUserLocation(user.getUserId()), executorService)
+				.thenAccept(visitedLocationBean -> {
+					user.addToVisitedLocations(visitedLocationBean);
+					rewardCentralService.calculateRewards(user);
+				});
 	}
 }

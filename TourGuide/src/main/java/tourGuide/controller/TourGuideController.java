@@ -1,7 +1,7 @@
 package tourGuide.controller;
 
 import java.util.List;
-
+import java.util.concurrent.ExecutionException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -14,7 +14,6 @@ import com.jsoniter.output.JsonStream;
 import tourGuide.beans.ProviderBean;
 import tourGuide.beans.VisitedLocationBean;
 import tourGuide.exceptions.UserNotFoundException;
-import tourGuide.model.UserLocation;
 import tourGuide.service.IGpsUtilService;
 import tourGuide.service.ITripPricerService;
 import tourGuide.service.IUserService;
@@ -67,9 +66,9 @@ public class TourGuideController {
      * @throws UserNotFoundException
      */
     @RequestMapping("/getLocation")
-    public String getLocation(@RequestParam String userName) throws UserNotFoundException, JsonProcessingException {
+    public String getLocation(@RequestParam String userName) throws UserNotFoundException, JsonProcessingException, ExecutionException, InterruptedException {
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
-        return objectMapper.writeValueAsString(visitedLocation.LocationBean);
+        return objectMapper.writeValueAsString(visitedLocation.locationBean);
     }
 
     //  TODO: Change this method to no longer return a List of Attractions.
@@ -81,11 +80,9 @@ public class TourGuideController {
     // The distance in miles between the user's location and each of the attractions.
     // The reward points for visiting each Attraction.
     //    Note: Attraction reward points can be gathered from RewardsCentral
+
     @RequestMapping("/getNearbyAttractions")
-    public String getNearbyAttractions(@RequestParam String userName) throws UserNotFoundException {
-
-
-
+    public String getNearbyAttractions(@RequestParam String userName) throws UserNotFoundException, ExecutionException, InterruptedException {
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
         return JsonStream.serialize(gpsUtilService.getNearByAttractions(visitedLocation));
     }

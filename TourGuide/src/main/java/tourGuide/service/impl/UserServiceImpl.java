@@ -11,9 +11,7 @@ import tourGuide.helper.InternalTestData;
 import tourGuide.model.User;
 import tourGuide.model.UserReward;
 import tourGuide.service.IGpsUtilService;
-import tourGuide.service.IRewardCentralService;
 import tourGuide.service.IUserService;
-import tourGuide.tracker.Tracker;
 import java.util.*;
 
 /**
@@ -22,23 +20,15 @@ import java.util.*;
  */
 @Service
 public class UserServiceImpl implements IUserService {
+
     private final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
     private final IGpsUtilService gpsUtilService;
-    private final IRewardCentralService rewardsCentralService;
-    public final Tracker tracker;
 
     @Autowired
     private InternalTestData internalTestData;
 
-    public UserServiceImpl(IGpsUtilService gpsUtilService, IRewardCentralService rewardsCentralService) {
+    public UserServiceImpl(IGpsUtilService gpsUtilService) {
         this.gpsUtilService = gpsUtilService;
-        this.rewardsCentralService = rewardsCentralService;
-        tracker = new Tracker(this);
-        addShutDownHook();
-    }
-
-    private void addShutDownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(tracker::stopTracking));
     }
 
     /**
@@ -50,7 +40,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public boolean isUserExist(String userName) {
         LOGGER.info("[SERVICE] Call UserServiceImpl method: isUserExist(" + userName + ")");
-        boolean response = internalTestData.getInternalUserMap().containsKey(userName);
+        boolean response = internalTestData.internalUserMap.containsKey(userName);
         LOGGER.debug("[RETURN]:  " + response);
         return response;
     }
@@ -66,7 +56,7 @@ public class UserServiceImpl implements IUserService {
     public User getInternalUser(String userName) throws UserNotFoundException {
         LOGGER.info("[SERVICE] Call UserServiceImpl method: getInternalUser(" + userName + ")");
         if (isUserExist(userName)) {
-            return internalTestData.getInternalUserMap().get(userName);
+            return internalTestData.internalUserMap.get(userName);
         } else {
             throw new UserNotFoundException("User Not found with: userName= " + userName);
         }
@@ -83,7 +73,7 @@ public class UserServiceImpl implements IUserService {
         LOGGER.info("[SERVICE] Call UserServiceImpl method: addUser(" + user + ")");
         String userName = user.getUserName();
         if (!isUserExist(userName)) {
-            internalTestData.getInternalUserMap().put(userName, user);
+            internalTestData.internalUserMap.put(userName, user);
             return getInternalUser(userName);
         } else {
             throw new UserAlreadyExistException("User: [" + user.getUserName() + "] already exist");
@@ -108,10 +98,14 @@ public class UserServiceImpl implements IUserService {
      * @param user object
      * @return A VisitedLocation Object who contain the date and user GPS position
      */
+    //TODO GPSUTILSERVICE REFACTOR ?
     @Override
     public VisitedLocationBean getUserLocation(User user) {
         LOGGER.info("[SERVICE] Call UserServiceImpl method: getUserLocation(" + user + ")");
-        return (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation() : trackUserLocation(user);
+        if (user.getVisitedLocations().size() == 0) {
+            gpsUtilService.trackUserLocation(user);
+        }
+        return user.getLastVisitedLocation();
     }
 
     /**
@@ -122,23 +116,6 @@ public class UserServiceImpl implements IUserService {
     @Override
     public List<User> getAllUsers() {
         LOGGER.info("[SERVICE] Call UserServiceImpl method: getAllUsers()");
-        return new ArrayList<>(internalTestData.getInternalUserMap().values());
-    }
-
-    /**
-     * Tracks the current position of the user and add it to its list of user.visitedLocations
-     * then call rewardCentral method to calculates the corresponding rewards
-     *
-     * @param user object
-     * @return  A VisitedLocation Object who contain the date and user GPS position
-     */
-    //TODO REFACTOR THIS METHOD ?
-    @Override
-    public VisitedLocationBean trackUserLocation(User user) {
-        LOGGER.info("[SERVICE] Call UserServiceImpl method: trackUserLocation(" + user + ")");
-        VisitedLocationBean visitedLocationBean = gpsUtilService.getUserLocation(user.getUserId());
-        user.addToVisitedLocations(visitedLocationBean);
-        rewardsCentralService.calculateRewards(user);
-        return visitedLocationBean;
+        return new ArrayList<>(internalTestData.internalUserMap.values());
     }
 }

@@ -7,18 +7,25 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import tourGuide.model.User;
+import tourGuide.service.IGpsUtilService;
 import tourGuide.service.IUserService;
 
 public class Tracker extends Thread {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Tracker.class);
 	private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
 	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-	private final IUserService userService;
+
+	@Autowired
+	private IUserService userService;
+
+	@Autowired
+	IGpsUtilService gpsUtilService;
+
 	private boolean stop = false;
 
-	public Tracker(IUserService userService) {
-		this.userService = userService;
+	public Tracker() {
 		executorService.submit(this);
 	}
 
@@ -41,7 +48,7 @@ public class Tracker extends Thread {
 			List<User> users = userService.getAllUsers();
 			LOGGER.debug("Begin Tracker. Tracking " + users.size() + " users.");
 			stopWatch.start();
-			users.forEach(userService::trackUserLocation);
+			users.forEach(gpsUtilService::trackUserLocation);
 			stopWatch.stop();
 			LOGGER.debug("Tracker Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
 			stopWatch.reset();
