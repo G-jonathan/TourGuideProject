@@ -1,11 +1,9 @@
 package tourGuide.controller;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,11 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jsoniter.output.JsonStream;
 import tourGuide.beans.ProviderBean;
 import tourGuide.beans.VisitedLocationBean;
+import tourGuide.dto.UserDto;
 import tourGuide.exceptions.UserNotFoundException;
 import tourGuide.service.IGpsUtilService;
 import tourGuide.service.ITripPricerService;
 import tourGuide.service.IUserService;
 import tourGuide.model.User;
+import tourGuide.utils.Convertion;
 
 /**
  * @author jonathan GOUVEIA
@@ -25,11 +25,7 @@ import tourGuide.model.User;
  */
 @RestController
 public class TourGuideController {
-
-    //TODO CUSTOM CONTROLLER LOGGER
-    private final Logger LOGGER = LoggerFactory.getLogger(TourGuideController.class);
-
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     IGpsUtilService gpsUtilService;
@@ -41,8 +37,9 @@ public class TourGuideController {
     ITripPricerService tripPricerService;
 
     /**
+     * Entry point
      *
-     * @return
+     * @return A welcome message
      */
     @RequestMapping("/")
     public String index() {
@@ -50,13 +47,35 @@ public class TourGuideController {
     }
 
     /**
+     * Get a list of every user's most recent location
      *
-     * @return
+     * @return a JSON mapping of userId to Locations like:
+     * {"userId":"17190a91-c3e3-4633-aace-92de27f807d7","location":{"latitude":-155.263092,"longitude":-30.622786}}
+     */
+    @RequestMapping("/getAllCurrentLocations")
+    public String getAllCurrentLocations() {
+        return JsonStream.serialize(gpsUtilService.getAllCurrentLocations(userService.getAllUsers()));
+    }
+
+    /**
+     * Get a list of every user in application dataBase
+     *
+     * @return a toString UserDto list
      */
     @RequestMapping("/users")
-    public String getAllUsers() {
-        LOGGER.info("ENTREE CONTROLLER: /USERS");
-        return userService.getAllUsers().toString();
+    public String getAllUsers() throws JsonProcessingException {
+        return objectMapper.writeValueAsString(Convertion.convertUserListToUserDtoList(userService.getAllUsers()));
+    }
+
+    /**
+     *
+     * @param userName
+     * @return
+     * @throws UserNotFoundException
+     */
+    @RequestMapping("/user")
+    private User getUser(@RequestParam String userName) throws UserNotFoundException {
+        return userService.getInternalUser(userName);
     }
 
     /**
@@ -66,7 +85,7 @@ public class TourGuideController {
      * @throws UserNotFoundException
      */
     @RequestMapping("/getLocation")
-    public String getLocation(@RequestParam String userName) throws UserNotFoundException, JsonProcessingException, ExecutionException, InterruptedException {
+    public String getLocation(@RequestParam String userName) throws UserNotFoundException, JsonProcessingException {
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
         return objectMapper.writeValueAsString(visitedLocation.locationBean);
     }
@@ -82,7 +101,7 @@ public class TourGuideController {
     //    Note: Attraction reward points can be gathered from RewardsCentral
 
     @RequestMapping("/getNearbyAttractions")
-    public String getNearbyAttractions(@RequestParam String userName) throws UserNotFoundException, ExecutionException, InterruptedException {
+    public String getNearbyAttractions(@RequestParam String userName) throws UserNotFoundException {
         VisitedLocationBean visitedLocation = userService.getUserLocation(getUser(userName));
         return JsonStream.serialize(gpsUtilService.getNearByAttractions(visitedLocation));
     }
@@ -98,24 +117,9 @@ public class TourGuideController {
         return JsonStream.serialize( userService.getUserRewards(getUser(userName)));
     }
 
-    /**
-     * Get a list of every user's most recent location
-     *
-     * @return a JSON mapping of userId to Locations like:
-     * {"userId":"17190a91-c3e3-4633-aace-92de27f807d7","location":{"latitude":-155.263092,"longitude":-30.622786}}
-     */
-    @RequestMapping("/getAllCurrentLocations")
-    public String getAllCurrentLocations() {
-        return JsonStream.serialize(gpsUtilService.getAllCurrentLocations(userService.getAllUsers()));
-    }
-
     @RequestMapping("/getTripDeals")
     public String getTripDeals(@RequestParam String userName) throws UserNotFoundException {
         List<ProviderBean> providers = tripPricerService.getTripDeals(getUser(userName));
         return JsonStream.serialize(providers);
-    }
-
-    private User getUser(String userName) throws UserNotFoundException {
-        return userService.getInternalUser(userName);
     }
 }
