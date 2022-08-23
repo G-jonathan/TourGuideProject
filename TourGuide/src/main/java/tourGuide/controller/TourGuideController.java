@@ -1,7 +1,6 @@
 package tourGuide.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jsoniter.output.JsonStream;
 import tourGuide.beans.ProviderBean;
 import tourGuide.beans.VisitedLocationBean;
-import tourGuide.dto.UserDto;
 import tourGuide.exceptions.UserNotFoundException;
 import tourGuide.service.IGpsUtilService;
 import tourGuide.service.ITripPricerService;
 import tourGuide.service.IUserService;
 import tourGuide.model.User;
-import tourGuide.utils.Convertion;
+import tourGuide.utils.DtoConversion;
 
 /**
  * @author jonathan GOUVEIA
@@ -58,25 +56,28 @@ public class TourGuideController {
     }
 
     /**
-     * Get a list of every user in application dataBase
+     * Get a list of every user
      *
      * @return a toString UserDto list
      */
     @RequestMapping("/users")
     public String getAllUsers() throws JsonProcessingException {
-        return objectMapper.writeValueAsString(Convertion.convertUserListToUserDtoList(userService.getAllUsers()));
+        return objectMapper.writeValueAsString(DtoConversion.convertUserListToUserDtoList(userService.getAllUsers()));
     }
 
     /**
+     * Get a single user
      *
-     * @param userName
-     * @return
-     * @throws UserNotFoundException
+     * @param userName The name of the requested user
+     * @return The userDto Object requested
+     * @throws UserNotFoundException This exception is thrown when a user is not found in our database
      */
     @RequestMapping("/user")
     private User getUser(@RequestParam String userName) throws UserNotFoundException {
         return userService.getInternalUser(userName);
     }
+
+//TODO PRIVATE GETUSER + PUBLIC GETUSER ??????
 
     /**
      *
@@ -98,7 +99,7 @@ public class TourGuideController {
     // The user's location lat/long,
     // The distance in miles between the user's location and each of the attractions.
     // The reward points for visiting each Attraction.
-    //    Note: Attraction reward points can be gathered from RewardsCentral
+    // Note: Attraction reward points can be gathered from RewardsCentral
 
     @RequestMapping("/getNearbyAttractions")
     public String getNearbyAttractions(@RequestParam String userName) throws UserNotFoundException {

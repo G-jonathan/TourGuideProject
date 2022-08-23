@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tourGuide.beans.AttractionBean;
 import tourGuide.beans.LocationBean;
@@ -18,22 +17,24 @@ import tourGuide.model.User;
 import tourGuide.model.UserLocation;
 import tourGuide.proxies.MicroserviceGpsUtilProxy;
 import tourGuide.service.IGpsUtilService;
-import tourGuide.service.IRewardCentralService;
+import tourGuide.utils.DistanceCalculations;
 
+/**
+ * @author jonathan GOUVEIA
+ * @version 1.0
+ */
 @Service
 public class GpsUtilServiceImpl implements IGpsUtilService {
 	private final Logger LOGGER = LoggerFactory.getLogger(GpsUtilServiceImpl.class);
-	private final MicroserviceGpsUtilProxy gpsUtilProxy;
 	private static final int attractionProximityRange = 200;
-	private final ExecutorService executorService = Executors.newFixedThreadPool(10000);
+	private final MicroserviceGpsUtilProxy gpsUtilProxy;
 
 	@Autowired
-	IRewardCentralService rewardCentralService;
+	DistanceCalculations distanceCalculations;
 
 	public GpsUtilServiceImpl(MicroserviceGpsUtilProxy gpsUtilProxy) {
 		this.gpsUtilProxy = gpsUtilProxy;
 	}
-
 
 	/**
 	 *
@@ -63,7 +64,7 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	 */
 	@Override
 	public VisitedLocationBean getUserLocation(UUID userId) {
-		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: getNearByAttractions(" + userId + ")");
+		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: getUserLocation(" + userId + ")");
 		return gpsUtilProxy.getUserLocation(userId);
 	}
 
@@ -84,7 +85,6 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 		return nearbyAttractions;
 	}
 
-
 	/**
 	 *
 	 * @param attraction
@@ -94,22 +94,30 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	@Override
 	public boolean isWithinAttractionProximity(AttractionBean attraction, LocationBean location) {
 		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: isWithinAttractionProximity(" + attraction + ", " + location + ")");
-		return !(rewardCentralService.getDistance(attraction, location) > attractionProximityRange);
+		return !(distanceCalculations.getDistance(attraction, location) > attractionProximityRange);
 	}
 
 	/**
-	 * Tracks the current position of the user and add it to its list of user.visitedLocations
-	 * then call rewardCentral method to calculates the corresponding rewards
 	 *
-	 * @param user object
+	 * @param user
+	 * @return
 	 */
 	@Override
-	public void trackUserLocation(User user) {
-		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: trackUserLocation(" + user + ")");
-		CompletableFuture.supplyAsync(() -> getUserLocation(user.getUserId()), executorService)
-				.thenAccept(visitedLocationBean -> {
-					user.addToVisitedLocations(visitedLocationBean);
-					rewardCentralService.calculateRewards(user);
-				});
+	@Async
+	public CompletableFuture<VisitedLocationBean> getAndAddUserLocation(User user) {
+		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: getAndAddUserLocation()");
+		VisitedLocationBean location = gpsUtilProxy.getUserLocation(user.getUserId());
+		user.addToVisitedLocations(location);
+		return CompletableFuture.completedFuture(location);
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	@Override
+	public List<AttractionBean> getAttractionsList() {
+		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: getAttractionsList()");
+		return gpsUtilProxy.getAttractionList();
 	}
 }

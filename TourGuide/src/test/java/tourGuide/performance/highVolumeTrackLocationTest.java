@@ -8,13 +8,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import tourGuide.beans.VisitedLocationBean;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.model.User;
 import tourGuide.service.IGpsUtilService;
-import tourGuide.service.IUserService;
+import tourGuide.service.impl.UserServiceImpl;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -25,8 +30,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
+@ActiveProfiles("test")
 public class highVolumeTrackLocationTest {
     private final Logger LOGGER = LoggerFactory.getLogger(highVolumeTrackLocationTest.class);
+
+    @Autowired
+    private IGpsUtilService gpsUtilService;
 
     /**
      * The number of users generated for the high volume tests is adjusted via the InternalTestHelper.setInternalUserNumber() method.
@@ -37,25 +46,25 @@ public class highVolumeTrackLocationTest {
         InternalTestHelper.setInternalUserNumber(100);
     }
 
-    @Autowired
-    private IUserService userService;
-
-    @Autowired
-    private IGpsUtilService gpsUtilService;
-
     /**
      * With 100 000 users, test should finish within 15 minutes.
      */
     @Test
     public void highVolumeTrackLocation() {
+        UserServiceImpl userService = new UserServiceImpl(gpsUtilService);
         List<User> allUsers = userService.getAllUsers();
+        allUsers.forEach(User::clearVisitedLocations);
+        List<CompletableFuture<VisitedLocationBean>> allFutures = new ArrayList<>();
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         for (User user : allUsers) {
-            gpsUtilService.trackUserLocation(user);
+            allFutures.add(gpsUtilService.getAndAddUserLocation(user));
         }
+        CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[0])).join();
         stopWatch.stop();
-        userService.tracker.stopTracking();
+        for (User user : allUsers) {
+            assertEquals(1, user.getVisitedLocations().size());
+        }
         LOGGER.info("[TEST] highVolumeTrackLocation: Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
         assertTrue(TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
     }

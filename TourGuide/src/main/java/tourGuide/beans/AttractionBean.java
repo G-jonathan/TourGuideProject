@@ -4,16 +4,16 @@ import java.util.UUID;
 
 public class AttractionBean extends LocationBean {
 
-    public final String name;
+    public final String attractionName;
     public final String city;
     public final String state;
-    public final UUID id;
+    public final UUID attractionId;
 
-    public AttractionBean(String name, String city, String state, UUID id, double latitude, double longitude) {
+    public AttractionBean(String attractionName, String city, String state, UUID attractionId, double latitude, double longitude) {
         super(latitude, longitude);
-        this.name = name;
+        this.attractionName = attractionName;
         this.city = city;
         this.state = state;
-        this.id = id;
+        this.attractionId = attractionId;
     }
 }
