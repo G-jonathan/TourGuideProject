@@ -7,6 +7,7 @@ import tourGuide.model.User;
 import tourGuide.model.UserLocation;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public interface IGpsUtilService {
 
@@ -18,5 +19,7 @@ public interface IGpsUtilService {
 
     boolean isWithinAttractionProximity(AttractionBean attraction, LocationBean location);
 
-    void trackUserLocation(User user);
+    List<AttractionBean> getAttractionsList();
+
+    CompletableFuture<VisitedLocationBean> getAndAddUserLocation(User user);
 }

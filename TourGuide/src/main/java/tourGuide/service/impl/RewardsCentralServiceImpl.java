@@ -1,90 +1,77 @@
 package tourGuide.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tourGuide.beans.AttractionBean;
-import tourGuide.beans.LocationBean;
 import tourGuide.beans.VisitedLocationBean;
 import tourGuide.model.User;
 import tourGuide.model.UserReward;
-import tourGuide.proxies.MicroserviceGpsUtilProxy;
 import tourGuide.proxies.MicroserviceRewardCentralProxy;
+import tourGuide.service.IGpsUtilService;
 import tourGuide.service.IRewardCentralService;
+import tourGuide.utils.DistanceCalculations;
 
+/**
+ * Provides methods for manipulating UserRewards and call the MicroserviceRewardCentralProxy
+ *
+ * @author jonathan GOUVEIA
+ * @version 1.0
+ */
 @Service
 public class RewardsCentralServiceImpl implements IRewardCentralService {
-	private final MicroserviceGpsUtilProxy gpsUtilProxy;
+	private final Logger LOGGER = LoggerFactory.getLogger(RewardsCentralServiceImpl.class);
+	private final int defaultProximityBufferInMiles = 10;
+	private int proximityBufferInMiles = defaultProximityBufferInMiles;
 	private final MicroserviceRewardCentralProxy rewardCentralProxy;
 
-	private final Logger LOGGER = LoggerFactory.getLogger(RewardsCentralServiceImpl.class);
+	@Autowired
+	DistanceCalculations distanceCalculations;
 
-	private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
-	// proximity in miles
-	private final int defaultProximityBuffer = 10;
-	private int proximityBuffer = defaultProximityBuffer;
+	@Autowired
+	IGpsUtilService gpsUtilService;
 
-	public RewardsCentralServiceImpl(MicroserviceGpsUtilProxy gpsUtilProxy, MicroserviceRewardCentralProxy rewardCentralProxy) {
-		this.gpsUtilProxy = gpsUtilProxy;
+	public RewardsCentralServiceImpl(MicroserviceRewardCentralProxy rewardCentralProxy) {
 		this.rewardCentralProxy = rewardCentralProxy;
 	}
 
-	public void setProximityBuffer(int proximityBuffer) {
-		this.proximityBuffer = proximityBuffer;
+	public void setProximityBufferInMiles(int proximityBufferInMiles) {
+		this.proximityBufferInMiles = proximityBufferInMiles;
 	}
 
 	public void setDefaultProximityBuffer() {
-		proximityBuffer = defaultProximityBuffer;
-	}
-
-	@Override
-	public int getRewardPoints(AttractionBean attraction, User user) {
-		return rewardCentralProxy.getAttractionRewardPoints(attraction.id, user.getUserId());
+		proximityBufferInMiles = defaultProximityBufferInMiles;
 	}
 
 	/**
+	 * For each available attraction, if the user has not yet received a reward
+	 * then we check if his position is close to this attraction.
+	 * If so, the corresponding rewards are calculated and added to the user.
 	 *
-	 * @param visitedLocation
-	 * @param attraction
-	 * @return
+	 * @param user The user for whom we calculate their rewards
+	 * @return User object after the asynchronous computation
 	 */
 	@Override
-	public boolean nearAttraction(VisitedLocationBean visitedLocation, AttractionBean attraction) {
-		return !(getDistance(attraction, visitedLocation.locationBean) > proximityBuffer);
-	}
-
-	/**
-	 *
-	 * @param loc1
-	 * @param loc2
-	 * @return
-	 */
-	@Override
-	public double getDistance(LocationBean loc1, LocationBean loc2) {
-		double lat1 = Math.toRadians(loc1.latitude);
-		double lon1 = Math.toRadians(loc1.longitude);
-		double lat2 = Math.toRadians(loc2.latitude);
-		double lon2 = Math.toRadians(loc2.longitude);
-		double angle = Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));
-		double nauticalMiles = 60 * Math.toDegrees(angle);
-		return STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
-	}
-
-	@Override
-	public void calculateRewards(User user) {
-		List<VisitedLocationBean> userLocations = user.getVisitedLocations();
-		List<AttractionBean> attractions = gpsUtilProxy.getAttractionList();
-		int i =0;
-		for (VisitedLocationBean visitedLocation : userLocations) {
-			i = i+1;
+	@Async
+	public CompletableFuture<User> calculateRewards(User user) {
+		LOGGER.info("[SERVICE] Call RewardsCentralServiceImpl method: calculateRewards()");
+		List<AttractionBean> attractions = gpsUtilService.getAttractionsList();
+		List<VisitedLocationBean> visitedLocationList = new ArrayList<>(user.getVisitedLocations());
+		for (VisitedLocationBean visitedLocation : visitedLocationList) {
 			for (AttractionBean attraction : attractions) {
-				if (user.getUserRewards().stream().noneMatch(r -> r.attraction.name.equals(attraction.name))) {
-					if (nearAttraction(visitedLocation, attraction)) {
-						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+				if (user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
+					if (distanceCalculations.getDistance(attraction, visitedLocation.locationBean) <= proximityBufferInMiles) {
+						int rewardPoints = rewardCentralProxy.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
+						user.addUserReward(new UserReward(visitedLocation, attraction, rewardPoints));
 					}
 				}
 			}
 		}
+		return CompletableFuture.completedFuture(user);
 	}
 }
