@@ -16,4 +16,20 @@ public class AttractionBean extends LocationBean {
         this.state = state;
         this.attractionId = attractionId;
     }
+
+    public String getAttractionName() {
+        return attractionName;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public UUID getAttractionId() {
+        return attractionId;
+    }
 }

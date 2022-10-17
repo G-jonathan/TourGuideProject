@@ -30,7 +30,7 @@ test:
   stage: test
   script:
     - cd TourGuide
-    - ./gradlew check
+    - ./gradlew test
   only:
     - develop
 

@@ -2,6 +2,7 @@ package tourGuide.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tourGuide.beans.AttractionBean;
 import tourGuide.beans.VisitedLocationBean;
+import tourGuide.dto.NearbyAttractionDto;
 import tourGuide.model.User;
 import tourGuide.model.UserReward;
 import tourGuide.proxies.MicroserviceRewardCentralProxy;
@@ -64,8 +66,11 @@ public class RewardsCentralServiceImpl implements IRewardCentralService {
 		List<VisitedLocationBean> visitedLocationList = new ArrayList<>(user.getVisitedLocations());
 		for (VisitedLocationBean visitedLocation : visitedLocationList) {
 			for (AttractionBean attraction : attractions) {
+				System.out.println("ENTREE 111111");
 				if (user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
+					System.out.println("ENTREE 222222");
 					if (distanceCalculations.getDistance(attraction, visitedLocation.locationBean) <= proximityBufferInMiles) {
+						System.out.println("ENTREE 333333");
 						int rewardPoints = rewardCentralProxy.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
 						user.addUserReward(new UserReward(visitedLocation, attraction, rewardPoints));
 					}
@@ -73,5 +78,35 @@ public class RewardsCentralServiceImpl implements IRewardCentralService {
 			}
 		}
 		return CompletableFuture.completedFuture(user);
+	}
+
+	/**
+	 * Get a user's rewards points for an attraction
+	 *
+	 * @param attractionId attraction id
+	 * @param userId       user id
+	 * @return an integer, the reward points
+	 */
+	@Override
+	public int getRewardPoints(UUID attractionId, UUID userId) {
+		LOGGER.info("[SERVICE] Call RewardsCentralServiceImpl method: getRewardPoints()");
+		return rewardCentralProxy.getAttractionRewardPoints(attractionId, userId);
+	}
+
+	/**
+	 * Set rewards points to a NearbyAttractionDList
+	 *
+	 * @param nearbyAttractionDtoList a list of NearbyAttractionDto object
+	 * @param userId                  The user for whom the nearby locations rewards are determined
+	 * @return the completed list with the reward points
+	 */
+	@Override
+	public List<NearbyAttractionDto> setNearbyAttractionRewardPoints(List<NearbyAttractionDto> nearbyAttractionDtoList, UUID userId) {
+		LOGGER.info("[SERVICE] Call RewardsCentralServiceImpl method: setNearbyAttractionRewardPoints()");
+		for (NearbyAttractionDto nearbyAttractionDto : nearbyAttractionDtoList) {
+			int points = rewardCentralProxy.getAttractionRewardPoints(nearbyAttractionDto.getAttractionId(), userId);
+			nearbyAttractionDto.setRewardPoints(points);
+		}
+		return nearbyAttractionDtoList;
 	}
 }

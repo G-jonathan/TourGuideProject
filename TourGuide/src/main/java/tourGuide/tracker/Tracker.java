@@ -25,7 +25,7 @@ import tourGuide.service.IUserService;
 @Profile("!test")
 public class Tracker extends Thread {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Tracker.class);
-	private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(1);
+	private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(20);
 	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 	private boolean stop = false;
 	private final IUserService userServiceImpl;

@@ -3,6 +3,7 @@ package tourGuide.service;
 import tourGuide.beans.AttractionBean;
 import tourGuide.beans.LocationBean;
 import tourGuide.beans.VisitedLocationBean;
+import tourGuide.dto.NearbyAttractionDto;
 import tourGuide.model.User;
 import tourGuide.model.UserLocation;
 import java.util.List;
@@ -15,7 +16,7 @@ public interface IGpsUtilService {
 
     VisitedLocationBean getUserLocation(UUID userId);
 
-    List<AttractionBean> getNearByAttractions(VisitedLocationBean visitedLocation);
+    List<NearbyAttractionDto> getNearByAttractions(VisitedLocationBean visitedLocation);
 
     boolean isWithinAttractionProximity(AttractionBean attraction, LocationBean location);
 

@@ -1,8 +1,6 @@
 package tourGuide.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +10,7 @@ import org.springframework.stereotype.Service;
 import tourGuide.beans.AttractionBean;
 import tourGuide.beans.LocationBean;
 import tourGuide.beans.VisitedLocationBean;
+import tourGuide.dto.NearbyAttractionDto;
 import tourGuide.model.Location;
 import tourGuide.model.User;
 import tourGuide.model.UserLocation;
@@ -69,20 +68,35 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	}
 
 	/**
-	 *
 	 * @param visitedLocation
 	 * @return
 	 */
 	@Override
-	public List<AttractionBean> getNearByAttractions(VisitedLocationBean visitedLocation) {
+	public List<NearbyAttractionDto> getNearByAttractions(VisitedLocationBean visitedLocation) {
 		LOGGER.info("[SERVICE] Call GpsUtilServiceImpl method: getNearByAttractions(" + visitedLocation + ")");
-		List<AttractionBean> nearbyAttractions = new ArrayList<>();
-		for (AttractionBean attraction : gpsUtilProxy.getAttractionList()) {
-			if (isWithinAttractionProximity(attraction, visitedLocation.locationBean)) {
-				nearbyAttractions.add(attraction);
-			}
+		List<NearbyAttractionDto> nearbyAttractionsListDto = new ArrayList<>();
+		List<AttractionBean> attractionBeanList = gpsUtilProxy.getAttractionList();
+		TreeMap<Double, AttractionBean> treeMap = new TreeMap<>();
+		for (AttractionBean attractionBean : attractionBeanList) {
+			double distance = distanceCalculations.getDistance(attractionBean, visitedLocation.locationBean);
+			treeMap.put(distance, attractionBean);
 		}
-		return nearbyAttractions;
+		Set<Map.Entry<Double, AttractionBean>> set = treeMap.entrySet();
+		Iterator<Map.Entry<Double, AttractionBean>> iterator = set.iterator();
+		int i = 0;
+		while (iterator.hasNext() & i < 5) {
+			Map.Entry<Double, AttractionBean> entryMap = iterator.next();
+			double distance = entryMap.getKey();
+			AttractionBean attractionBean = entryMap.getValue();
+			NearbyAttractionDto nearbyAttractionDto = new NearbyAttractionDto();
+			nearbyAttractionDto.setAttractionId(attractionBean.attractionId);
+			nearbyAttractionDto.setAttractionName(attractionBean.attractionName);
+			nearbyAttractionDto.setAttractionLocation(new LocationBean(attractionBean.longitude, attractionBean.latitude));
+			nearbyAttractionDto.setDistance(distance);
+			nearbyAttractionsListDto.add(nearbyAttractionDto);
+			i += 1;
+		}
+		return nearbyAttractionsListDto;
 	}
 
 	/**

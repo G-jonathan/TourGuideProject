@@ -4,6 +4,7 @@ import tourGuide.beans.VisitedLocationBean;
 import tourGuide.exceptions.UserAlreadyExistException;
 import tourGuide.exceptions.UserNotFoundException;
 import tourGuide.model.User;
+import tourGuide.model.UserPreferences;
 import tourGuide.model.UserReward;
 import java.util.List;
 
@@ -20,4 +21,6 @@ public interface IUserService {
     User addUser(User user) throws UserAlreadyExistException, UserNotFoundException;
 
     boolean isUserExist(String userName);
+
+    void updateUserPreferences(String userName, UserPreferences userPreferences);
 }

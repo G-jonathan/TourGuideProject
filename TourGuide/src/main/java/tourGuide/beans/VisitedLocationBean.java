@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.UUID;
 
 public class VisitedLocationBean {
-
     public final UUID userId;
 
     @JsonProperty("location")
@@ -16,5 +15,17 @@ public class VisitedLocationBean {
         this.userId = userId;
         this.locationBean = LocationBean;
         this.timeVisited = timeVisited;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public LocationBean getLocationBean() {
+        return locationBean;
+    }
+
+    public Date getTimeVisited() {
+        return timeVisited;
     }
 }

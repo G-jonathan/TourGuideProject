@@ -12,4 +12,16 @@ public class ProviderBean {
         this.price = price;
         this.tripId = tripId;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public UUID getTripId() {
+        return tripId;
+    }
 }
