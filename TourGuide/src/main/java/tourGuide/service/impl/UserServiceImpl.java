@@ -203,7 +203,6 @@ public class UserServiceImpl implements IUserService {
      * @return a random LocalDateTime Object before the current date
      */
     private Date getRandomTime() {
-        //LOGGER.debug("Call InternalTestData method: getRandomTime()");
         LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
         return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
     }

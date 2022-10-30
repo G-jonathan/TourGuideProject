@@ -9,7 +9,6 @@ import tourGuide.model.UserLocation;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
 public interface IGpsUtilService {
 
     List<UserLocation> getAllCurrentLocations(List<User> userList);

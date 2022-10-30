@@ -1,11 +1,8 @@
 image: java:8-jdk
-#gradle:alpine
-#java:8-jdk
 
 stages:
   - build
   - test
-  #- deploy
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
@@ -15,17 +12,18 @@ cache:
     - .gradle/wrapper
     - .gradle/caches
 
-# ./gradlew build
 build:
   stage: build
   script:
     - cd TourGuide
     - ./gradlew assemble
+  artifacts:
+    paths:
+      - ${CI_PROJECT_DIR}
+    name: "$CI_JOB_NAME"
   only:
     - develop
 
-# gradle check
-# gradle test
 test:
   stage: test
   script:
@@ -34,10 +32,3 @@ test:
   only:
     - develop
 
-    #deploy:
-    #stage: deploy
-    #script:
-    #- ./deploy
-
-  #after_script:
-  #- echo "End CI"
