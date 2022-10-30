@@ -3,10 +3,10 @@ package tourGuide.service;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.*;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import tourGuide.beans.AttractionBean;
 import tourGuide.beans.LocationBean;
 import tourGuide.beans.VisitedLocationBean;
@@ -20,9 +20,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
-//TODO ? @DisplayName on test methods ?
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
+@ActiveProfiles("test")
 class UserServiceImplTest {
 
     @Autowired
@@ -107,32 +107,9 @@ class UserServiceImplTest {
         assertEquals(visitedLocationBeanTest.locationBean.longitude, visitedLocationBeanResult.locationBean.longitude);
     }
 
-    //TODO
-    /*
-    @Test
-    void givenUserWithEmptyVisitedLocationList_whenGetUserLocation_thenReturnCurrentLocation() {
-        UUID userId = UUID.randomUUID();
-        User userTest = new User(userId, "userTestGetUserLocation", "42", "userTestGetUserLocation@tourGuide.com");
-        LocationBean locationBeanTest = new LocationBean(2000, 3000);
-        VisitedLocationBean visitedLocationBeanTest = new VisitedLocationBean(userId, locationBeanTest, new Date());
-        IUserService userServiceSpy = Mockito.spy(userServiceToSpy);
-        Mockito.doReturn(visitedLocationBeanTest).when(userServiceSpy).trackUserLocation(Mockito.any());
-        VisitedLocationBean visitedLocationBeanResult = userServiceSpy.getUserLocation(userTest);
-        assertEquals(visitedLocationBeanTest.locationBean, visitedLocationBeanResult.locationBean);
-        assertEquals(visitedLocationBeanTest.locationBean.latitude, visitedLocationBeanResult.locationBean.latitude);
-        assertEquals(visitedLocationBeanTest.locationBean.longitude, visitedLocationBeanResult.locationBean.longitude);
-    }
-
-     */
-
     @Test
     void getAllUsers() {
         List<User> userListTest = userService.getAllUsers();
         assertTrue(userListTest.size() > 0);
-    }
-
-    //TODO REFACTOR THIS METHOD ?
-    @Test
-    void trackUserLocation() {
     }
 }

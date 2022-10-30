@@ -45,7 +45,7 @@ public class highVolumeTrackLocationIT {
      */
     @BeforeAll
     static void beforeAll() {
-        InternalTestHelper.setInternalUserNumber(1000);
+        InternalTestHelper.setInternalUserNumber(100000);
     }
 
     /**

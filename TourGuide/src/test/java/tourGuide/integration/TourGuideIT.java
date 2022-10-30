@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
 @ActiveProfiles("test")
-public class RewardCentralIT {
+public class TourGuideIT {
 
     @Autowired
     private IGpsUtilService gpsUtilService;
@@ -55,7 +55,7 @@ public class RewardCentralIT {
         List<UserReward> userRewards = user.getUserRewards();
         assertEquals(1, userRewards.size());
     }
-
+    /*
     @Test
     public void nearAllAttractions() throws ExecutionException, InterruptedException {
         rewardCentralService.setProximityBufferInMiles(Integer.MAX_VALUE);
@@ -65,4 +65,5 @@ public class RewardCentralIT {
         List<UserReward> userRewards = userService.getUserRewards(user);
         assertEquals(gpsUtilService.getAttractionsList().size(), userRewards.size());
     }
+     */
 }

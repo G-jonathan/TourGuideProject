@@ -66,11 +66,8 @@ public class RewardsCentralServiceImpl implements IRewardCentralService {
 		List<VisitedLocationBean> visitedLocationList = new ArrayList<>(user.getVisitedLocations());
 		for (VisitedLocationBean visitedLocation : visitedLocationList) {
 			for (AttractionBean attraction : attractions) {
-				System.out.println("ENTREE 111111");
 				if (user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
-					System.out.println("ENTREE 222222");
 					if (distanceCalculations.getDistance(attraction, visitedLocation.locationBean) <= proximityBufferInMiles) {
-						System.out.println("ENTREE 333333");
 						int rewardPoints = rewardCentralProxy.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
 						user.addUserReward(new UserReward(visitedLocation, attraction, rewardPoints));
 					}

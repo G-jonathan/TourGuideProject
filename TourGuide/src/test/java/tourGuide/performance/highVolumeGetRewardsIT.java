@@ -51,7 +51,7 @@ public class highVolumeGetRewardsIT {
      */
     @BeforeAll
     static void beforeAll() {
-        InternalTestHelper.setInternalUserNumber(1000);
+        InternalTestHelper.setInternalUserNumber(100000);
     }
 
     /**
