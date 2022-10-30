@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * This class offers tests to measure the performance of our program.
  */
-@Disabled
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ActiveProfiles("test")
@@ -45,7 +45,7 @@ public class highVolumeTrackLocationIT {
      */
     @BeforeAll
     static void beforeAll() {
-        InternalTestHelper.setInternalUserNumber(1000);
+        InternalTestHelper.setInternalUserNumber(100000);
     }
 
     /**

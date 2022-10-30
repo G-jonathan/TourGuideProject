@@ -2,7 +2,6 @@ package tourGuide.integration;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,11 +22,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
 @ActiveProfiles("test")
-public class RewardCentralIT {
+public class TourGuideIT {
 
     @Autowired
     private IGpsUtilService gpsUtilService;
@@ -62,6 +60,7 @@ public class RewardCentralIT {
         User user = userService.getAllUsers().get(0);
         CompletableFuture<User> future = rewardCentralService.calculateRewards(user);
         User finalUser = future.get();
+        rewardCentralService.setDefaultProximityBuffer();
         List<UserReward> userRewards = userService.getUserRewards(user);
         assertEquals(gpsUtilService.getAttractionsList().size(), userRewards.size());
     }

@@ -1,7 +1,5 @@
 package tourGuide.service.impl;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +15,8 @@ import tourGuide.model.UserLocation;
 import tourGuide.proxies.MicroserviceGpsUtilProxy;
 import tourGuide.service.IGpsUtilService;
 import tourGuide.utils.DistanceCalculations;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author jonathan GOUVEIA
@@ -36,9 +36,10 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	}
 
 	/**
+	 * Get locations from a user list
 	 *
-	 * @param userList
-	 * @return
+	 * @param userList The list of users whose position is wanted
+	 * @return A UserLocation who contain a user id and his location
 	 */
 	@Override
 	public List<UserLocation> getAllCurrentLocations(List<User> userList) {
@@ -57,9 +58,10 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	}
 
 	/**
+	 * Get a user's current location
 	 *
-	 * @param userId
-	 * @return
+	 * @param userId The id of the user whose position is wanted
+	 * @return A visited locationBean object that contains the user's current location
 	 */
 	@Override
 	public VisitedLocationBean getUserLocation(UUID userId) {
@@ -68,8 +70,10 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	}
 
 	/**
-	 * @param visitedLocation
-	 * @return
+	 * Get user's five nearby attractions.
+	 *
+	 * @param visitedLocation A VisitedLocation object
+	 * @return A list that contains the 5 closest attractions to the user
 	 */
 	@Override
 	public List<NearbyAttractionDto> getNearByAttractions(VisitedLocationBean visitedLocation) {
@@ -100,10 +104,11 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	}
 
 	/**
+	 * Determines if the user is near an attraction
 	 *
-	 * @param attraction
-	 * @param location
-	 * @return
+	 * @param attraction The reference attraction
+	 * @param location   The User location
+	 * @return a boolean: true if user is near this attraction, false if not
 	 */
 	@Override
 	public boolean isWithinAttractionProximity(AttractionBean attraction, LocationBean location) {
@@ -112,9 +117,10 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	}
 
 	/**
+	 * Get the user's location and adds it to its VisitedLocation list
 	 *
-	 * @param user
-	 * @return
+	 * @param user The user whose position is wanted
+	 * @return A visitedLocationBean object
 	 */
 	@Override
 	@Async
@@ -126,8 +132,9 @@ public class GpsUtilServiceImpl implements IGpsUtilService {
 	}
 
 	/**
+	 * Get a list of all attractions
 	 *
-	 * @return
+	 * @return aList of AttractionBean
 	 */
 	@Override
 	public List<AttractionBean> getAttractionsList() {

@@ -22,5 +22,5 @@ public interface IUserService {
 
     boolean isUserExist(String userName);
 
-    void updateUserPreferences(String userName, UserPreferences userPreferences);
+    void updateUserPreferences(String userName, UserPreferences userPreferences) throws UserNotFoundException;
 }

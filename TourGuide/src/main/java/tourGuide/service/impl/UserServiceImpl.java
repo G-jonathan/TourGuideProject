@@ -128,17 +128,24 @@ public class UserServiceImpl implements IUserService {
         return new ArrayList<>(internalUserMap.values());
     }
 
-    public void updateUserPreferences(String userName, UserPreferences userPreferences) {
-
+    /**
+     * Allows you to update a user's preferences
+     *
+     * @param userName HashMap key of internalUserMap
+     * @param userPreferences userPreferences object
+     * @throws UserNotFoundException Custom exception when a user is not found
+     */
+    public void updateUserPreferences(String userName, UserPreferences userPreferences) throws UserNotFoundException {
+        LOGGER.info("[SERVICE] Call UserServiceImpl method: updateUserPreferences()");
+        User user = getInternalUser(userName);
+        user.setUserPreferences(userPreferences);
     }
-
 
     /* *********************************************************************************
      *
      * Methods Below: For Internal Testing
      *
      * *********************************************************************************/
-
 
     /**
      * Populates the userMap with a number of users defined in internalTestHelper.internalUserNumber
@@ -203,7 +210,6 @@ public class UserServiceImpl implements IUserService {
      * @return a random LocalDateTime Object before the current date
      */
     private Date getRandomTime() {
-        //LOGGER.debug("Call InternalTestData method: getRandomTime()");
         LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
         return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
     }

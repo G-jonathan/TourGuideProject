@@ -15,4 +15,6 @@ public interface IRewardCentralService {
     List<NearbyAttractionDto> setNearbyAttractionRewardPoints(List<NearbyAttractionDto> nearbyAttractionDtoList, UUID userId);
 
     void setProximityBufferInMiles(int proximityBufferInMiles);
+
+    void setDefaultProximityBuffer();
 }

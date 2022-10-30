@@ -147,9 +147,9 @@ public class TourGuideController {
      * @throws UserNotFoundException Custom exception when a user is not found in application database
      */
     @PutMapping("/updateUserPreferences")
-    public String updateUserPreferences(@RequestParam String userName, @RequestBody UserPreferences userPreferences) throws UserNotFoundException {
+    public String updateUserPreferences(@RequestParam String userName, @RequestBody UserPreferences userPreferences) throws UserNotFoundException, JsonProcessingException {
         User user = userService.getInternalUser(userName);
         userService.updateUserPreferences(userName, userPreferences);
-        return JsonStream.serialize(userPreferences);
+        return (objectMapper.writeValueAsString(user.getUserPreferences()));
     }
 }
