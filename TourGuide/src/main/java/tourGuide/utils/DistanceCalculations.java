@@ -16,7 +16,7 @@ public class DistanceCalculations {
 
     /**
      * Calculates the distance between two gps coordinate points
-     * Statute mile * 1.15077945 = nautical mile
+     * Nautical mile * 1.15077945 = Statute mile
      * dλ = λ B – λ A
      * S A-B = arc cos (sin ϕ A sin ϕ B + cos ϕ A cos ϕ B cos dλ)
      * A degree of latitude is 60 miles.

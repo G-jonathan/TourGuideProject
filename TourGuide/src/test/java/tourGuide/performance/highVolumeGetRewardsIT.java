@@ -2,6 +2,7 @@ package tourGuide.performance;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -31,11 +32,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * This class offers tests to measure the performance of our program.
  */
+@Disabled
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ActiveProfiles("test")
-public class highVolumeGetRewardsTest {
-    private final Logger LOGGER = LoggerFactory.getLogger(highVolumeGetRewardsTest.class);
+public class highVolumeGetRewardsIT {
+    private final Logger LOGGER = LoggerFactory.getLogger(highVolumeGetRewardsIT.class);
 
     @Autowired
     private IGpsUtilService gpsUtilService;
@@ -49,7 +51,7 @@ public class highVolumeGetRewardsTest {
      */
     @BeforeAll
     static void beforeAll() {
-        InternalTestHelper.setInternalUserNumber(100000);
+        InternalTestHelper.setInternalUserNumber(1000);
     }
 
     /**

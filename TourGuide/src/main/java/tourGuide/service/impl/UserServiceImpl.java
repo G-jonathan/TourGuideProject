@@ -9,6 +9,7 @@ import tourGuide.exceptions.UserAlreadyExistException;
 import tourGuide.exceptions.UserNotFoundException;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.model.User;
+import tourGuide.model.UserPreferences;
 import tourGuide.model.UserReward;
 import tourGuide.service.IGpsUtilService;
 import tourGuide.service.IUserService;
@@ -125,6 +126,10 @@ public class UserServiceImpl implements IUserService {
     public List<User> getAllUsers() {
         LOGGER.info("[SERVICE] Call UserServiceImpl method: getAllUsers()");
         return new ArrayList<>(internalUserMap.values());
+    }
+
+    public void updateUserPreferences(String userName, UserPreferences userPreferences) {
+
     }
 
 

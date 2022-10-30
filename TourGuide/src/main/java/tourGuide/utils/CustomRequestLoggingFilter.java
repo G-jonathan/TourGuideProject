@@ -2,6 +2,7 @@ package tourGuide.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 import javax.servlet.FilterChain;
@@ -43,5 +44,6 @@ public class CustomRequestLoggingFilter extends GenericFilterBean {
             int status = currentResponse.getStatus();
             LOGGER.info("[CONTROLLER] Response status: {}", status);
         }
+
     }
 }

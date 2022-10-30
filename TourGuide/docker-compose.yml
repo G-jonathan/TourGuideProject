@@ -12,13 +12,13 @@ services:
       - 8080
 
   microservice-gpsUtil:
-    container_name:
+    container_name: microservice-gpsUtil
     image:
     build:
     restart: always
     network_mode: host
     expose:
-      - 8080
+      - 8081
 
   microservice-rewardCentral:
     container_name:

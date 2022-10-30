@@ -26,4 +26,12 @@ public class UserReward {
 	public void setRewardPoints(int rewardPoints) {
 		this.rewardPoints = rewardPoints;
 	}
+
+	public VisitedLocationBean getVisitedLocation() {
+		return visitedLocation;
+	}
+
+	public AttractionBean getAttraction() {
+		return attraction;
+	}
 }
